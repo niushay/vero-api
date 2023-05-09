@@ -2,6 +2,7 @@
 
 class ConstructionStagesCreate
 {
+	public $data;
 	public $name;
 	public $startDate;
 	public $endDate;
@@ -12,6 +13,7 @@ class ConstructionStagesCreate
 	public $status;
 
 	public function __construct($data) {
+        $this->data = $data;
 
 		if(is_object($data)) {
 
@@ -26,4 +28,19 @@ class ConstructionStagesCreate
 			}
 		}
 	}
+
+    public function validateStatus()
+    {
+        $statuses = ["NEW", "PLANNED", "DELETED"];
+
+        if (isset($this->data->status) && !in_array($this->data->status, $statuses)) {
+            $error = [
+                'success' => false,
+                'message' => 'Invalid status value. Status must be NEW, PLANNED or DELETED.'
+            ];
+
+            response($error, false, 400);
+        }
+        return true;
+    }
 }

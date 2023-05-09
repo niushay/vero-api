@@ -1,5 +1,7 @@
 <?php
 require_once 'Autoloader.php';
+require_once 'includes/functions.php';
+
 Autoloader::register();
 new Api();
 
@@ -16,8 +18,14 @@ class Api
 	{
 		self::$db = (new Database())->init();
 
-		$uri = strtolower(trim((string)$_SERVER['PATH_INFO'], '/'));
-		$httpVerb = isset($_SERVER['REQUEST_METHOD']) ? strtolower($_SERVER['REQUEST_METHOD']) : 'cli';
+
+        if (isset($_SERVER['PATH_INFO'])) {
+            $uri = strtolower(trim((string)$_SERVER['PATH_INFO'], '/'));
+        } else {
+		    $uri = strtolower(trim((string)$_SERVER['REQUEST_URI'], '/'));
+        }
+
+        $httpVerb = isset($_SERVER['REQUEST_METHOD']) ? strtolower($_SERVER['REQUEST_METHOD']) : 'cli';
 
 		$wildcards = [
 			':any' => '[^/]+',
@@ -37,6 +45,11 @@ class Api
 				'method' => 'post',
 				'bodyType' => 'ConstructionStagesCreate'
 			],
+            'patch constructionStages/(:num)' => [
+                'class' => 'ConstructionStages',
+                'method' => 'update',
+                'bodyType' => 'ConstructionStagesCreate'
+            ],
 		];
 
 		$response = [
@@ -50,7 +63,7 @@ class Api
 				if (preg_match('#^'.$pattern.'$#i', "{$httpVerb} {$uri}", $matches)) {
 					$params = [];
 					array_shift($matches);
-					if ($httpVerb === 'post') {
+					if ($httpVerb === 'post' || $httpVerb === 'patch') {
 						$data = json_decode(file_get_contents('php://input'));
 						$params = [new $target['bodyType']($data)];
 					}

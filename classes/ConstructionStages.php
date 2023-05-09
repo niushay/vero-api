@@ -67,4 +67,52 @@ class ConstructionStages
 		]);
 		return $this->getSingle($this->db->lastInsertId());
 	}
+
+    /**
+     * @param $id
+     * @param ConstructionStagesCreate $data
+     * @return void
+     */
+    public function update(ConstructionStagesCreate $data, $id)
+    {
+        $data->validateStatus();
+
+        $stmt = $this->db->prepare("
+                UPDATE construction_stages SET
+                    name = IFNULL(:name, name),
+                    start_date = IFNULL(:start_date, start_date),
+                    end_date = IFNULL(:end_date, end_date),
+                    duration = IFNULL(:duration, duration),
+                    durationUnit = IFNULL(:durationUnit, durationUnit),
+                    color = IFNULL(:color, color),
+                    externalId = IFNULL(:externalId, externalId),
+                    status = IFNULL(:status, status)
+                WHERE id = :id
+                ");
+        $stmt->execute([
+            'id' => $id,
+            'name' => $data->name ?? null,
+            'start_date' => $data->startDate ?? null,
+            'end_date' => $data->endDate ?? null,
+            'duration' => $data->duration ?? null,
+            'durationUnit' => $data->durationUnit ?? null,
+            'color' => $data->color ?? null,
+            'externalId' => $data->externalId ?? null,
+            'status' => $data->status ?? null,
+        ]);
+
+        // Check if the query was successful
+        if ($stmt->rowCount() === 0) {
+            $error = ['message' => 'Record not found.'];
+            response($error, false, 404);
+        }
+
+        $constructionItem = $this->getSingle($id);
+        $response = [
+            'message' => 'Record updated successfully.',
+            'data' => $constructionItem
+        ];
+
+        response($response);
+    }
 }
