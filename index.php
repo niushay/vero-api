@@ -50,6 +50,10 @@ class Api
                 'method' => 'update',
                 'bodyType' => 'ConstructionStagesCreate'
             ],
+            'delete constructionStages/(:num)' => [
+                'class' => 'ConstructionStages',
+                'method' => 'delete',
+            ],
 		];
 
 		$response = [
